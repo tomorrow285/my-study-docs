@@ -37,6 +37,8 @@
 - 文档互链用相对 `.md` 路径（`[x](chapter2.md)`），rehype-links 插件自动转路由；`http` 链接原样保留；Windows 绝对路径 `C:\temp_project\...` 自动转纯文本 `<code>`
 - 图片放 `docs/<项目>/images/`，构建时 sharp 自动优化（PNG→webp）
 - 子目录自动成为导航分组（如 `Core-Modules/`、`Concepts/`）
+- **平铺文档自动分组**（无子目录的顶层文件按文件名前缀分组）：`chapter\d*` →「章节」、`intro*` → 概览、`afterword/epilogue/conclusion` →「后记」、`reference-answers/faq/appendix/references` →「附录」；分组内**自然排序**（chapter2 排在 chapter10 前）；Home 恒在概览最前。规则在 `src/lib/doc-utils.ts` 的 `FLAT_SECTION_RULES`，新增约定改这里
+- 页面标题从 H1 提取，自动去掉行内 markdown 符号和 Pandoc 属性（`# 引言 {.unnumbered}` → 引言）
 
 ## 标准更新流程（用户新增/修改文档后）
 

@@ -31,6 +31,7 @@ my-study-docs/
    - 支持子目录分组：`docs/<项目名>/Core-Modules/xxx.md` → `/项目名/core-modules/xxx/`（路由全小写）
 3. 文档间互链用相对路径：`[下一章](chapter2.md)`，构建时自动转为站点路由
 4. 图片放在 `docs/<项目名>/images/`，构建时自动压缩优化（PNG → webp）
+5. 平铺的章节式文档（如 ai-agent）会自动分组：`chapter1.md`~`chapter10.md` 归入「章节」并按数字排序、`introduction.md` 进「概览」、`afterword.md` 归「后记」、`reference-answers.md` 归「附录」——无需建子目录也能有合理的侧边栏
 
 ## 本地开发
 
