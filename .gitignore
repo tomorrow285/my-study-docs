@@ -1,0 +1,7 @@
+# Astro
+node_modules/
+dist/
+.astro/
+
+# 依赖锁文件（pnpm 可选；如需锁版本可移除下面一行）
+# pnpm-lock.yaml

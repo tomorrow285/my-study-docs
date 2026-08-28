@@ -1,0 +1,130 @@
+---
+import '../styles/global.css';
+import type { NavItem } from '../lib/doc-utils';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  project: string;
+  title: string;
+  /** 当前 entry id，用于侧边栏高亮 */
+  entryId: string;
+  /** 当前项目导航树 */
+  nav: NavItem[];
+  prev?: NavItem;
+  next?: NavItem;
+  headings?: Heading[];
+}
+
+const { project, title, entryId, nav, prev, next, headings = [] } = Astro.props;
+
+// 按 section 分组导航，保持 nav 顺序；'' 归为「概览」组
+const groups: { label: string; items: NavItem[] }[] = [];
+for (const item of nav) {
+  const label = item.section === '' ? '概览' : item.section;
+  const last = groups[groups.length - 1];
+  if (last && last.label === label) {
+    last.items.push(item);
+  } else {
+    groups.push({ label, items: [item] });
+  }
+}
+
+const tocItems = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const isHome = nav.find((n) => n.id === entryId)?.id.endsWith('/home') ?? false;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · {project}</title>
+    <meta name="description" content={`${project} 学习文档 · ${title}`} />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-title" href="/">📚 学习文档库</a>
+      <nav class="breadcrumb">
+        <a href="/">首页</a>
+        <span class="sep">/</span>
+        <a href={`/${project}/`}>{project}</a>
+        {!isHome && (
+          <>
+            <span class="sep">/</span>
+            <span class="current">{title}</span>
+          </>
+        )}
+      </nav>
+    </header>
+
+    <div class="doc-layout">
+      <aside class="sidebar">
+        {groups.map((g) => (
+          <div class="nav-group">
+            <p class="nav-group-title">{g.label}</p>
+            <ul class="nav-list">
+              {g.items.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class:list={[
+                      { active: item.id === entryId },
+                      { 'nav-home': item.id.endsWith('/home') },
+                    ]}
+                  >
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </aside>
+
+      <main class="main-content">
+        <article class="prose">
+          <slot />
+        </article>
+
+        {(prev || next) && (
+          <nav class="prev-next">
+            {prev ? (
+              <a href={prev.href} class="prev">
+                <span class="pn-label">← 上一篇</span>
+                <span class="pn-title">{prev.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <a href={next.href} class="next">
+                <span class="pn-label">下一篇 →</span>
+                <span class="pn-title">{next.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+          </nav>
+        )}
+      </main>
+
+      {tocItems.length > 0 && (
+        <aside class="toc">
+          <p class="toc-title">本页目录</p>
+          <ul>
+            {tocItems.map((h) => (
+              <li class:list={['depth-' + h.depth]}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </div>
+  </body>
+</html>

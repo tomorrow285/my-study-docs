@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+import DocLayout from '../layouts/DocLayout.astro';
+import { buildProjectNav, getProjects, prevNext, type NavItem } from '../lib/doc-utils';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('docs');
+  // 预计算每个项目的导航树（所有页面共享）
+  const projectNavs = new Map<string, NavItem[]>();
+  for (const project of getProjects(entries)) {
+    projectNavs.set(project, buildProjectNav(entries, project));
+  }
+  return entries.map((entry) => {
+    const project = entry.id.split('/')[0];
+    const parts = entry.id.split('/');
+    // entry.id 全小写；home 结尾 → slug 去掉 home，生成 /codex/ index 页。
+    // 注意：Astro 的 rest 参数必须是字符串（'codex/a/b'），不是数组。
+    const slug = (parts[parts.length - 1] === 'home' ? parts.slice(0, -1) : parts).join('/');
+    return {
+      params: { slug },
+      props: { entry, project, nav: projectNavs.get(project)! },
+    };
+  });
+}
+
+const { entry, project, nav } = Astro.props;
+const { Content, headings } = await render(entry);
+const { prev, next } = prevNext(nav, entry.id);
+const title = nav.find((n) => n.id === entry.id)?.title ?? project;
+---
+
+<DocLayout
+  project={project}
+  title={title}
+  entryId={entry.id}
+  nav={nav}
+  prev={prev}
+  next={next}
+  headings={headings}
+>
+  <Content />
+</DocLayout>

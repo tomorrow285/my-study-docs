@@ -1,0 +1,45 @@
+---
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import { getProjects, extractTitle } from '../lib/doc-utils';
+
+const entries = await getCollection('docs');
+const projects = getProjects(entries);
+
+const projectInfo = projects.map((name) => {
+  const home = entries.find((e) => e.id === `${name}/Home`);
+  const count = entries.filter((e) => e.id.startsWith(`${name}/`)).length;
+  const desc = home ? extractTitle(home.body ?? '', '') : '';
+  return { name, count, desc, href: `/${name}/` };
+});
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>学习文档库</title>
+    <meta name="description" content="由 AI 生成的源码学习文档集合" />
+  </head>
+  <body>
+    <div class="home-wrap">
+      <h1>📚 学习文档库</h1>
+      <p class="subtitle">
+        为陌生开源项目生成的教学型学习文档。选择一个项目开始学习，建议按「主线 → 核心模块 → 概念 → 面试题」的顺序阅读。
+      </p>
+
+      {projectInfo.length === 0 ? (
+        <p>还没有文档，请把学习文档放到 <code>docs/&lt;项目名&gt;/</code> 下。</p>
+      ) : (
+        projectInfo.map((p) => (
+          <a class="project-card" href={p.href}>
+            <div class="pc-name">{p.name}</div>
+            <div class="pc-desc">{p.desc}</div>
+            <div class="pc-count">共 {p.count} 篇文档</div>
+          </a>
+        ))
+      )}
+    </div>
+  </body>
+</html>
